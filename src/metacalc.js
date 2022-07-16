@@ -1,4 +1,4 @@
-import { createContext, createScript } from './metavm.js';
+import { createContext, createScript } from './worker-vm.js';
 
 const wrap = (target) =>
   new Proxy(target, {
@@ -28,7 +28,7 @@ const getCell = (target, prop) => {
 
 const setCell = (target, prop, value) => {
   if (typeof value === "string" && value[0] === "=") {
-    const src = "() => " + value.substring(1);
+    const src = value.substring(1);
     const options = { context: target.context };
     const script = createScript(prop, src, options);
     target.expressions.set(prop, script.exports);

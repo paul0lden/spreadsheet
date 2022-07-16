@@ -1,17 +1,8 @@
-const scripts = new Map();
-
 const methods = {
-	createContext: ({ context }) => {
-		console.log(context);
-		Object.entries(context).forEach(([key, value]) => {
-			self[key] = value;
-		});
-	},
-	addScript: ({ name, script }) => {
-		scripts.set(name, new Function(`return ${script}`)());
-	},
-	runScript: ({ name }) => {
-		postMessage({ result: scripts.get(name)()})
+	execScript: ({ name, source, context }) => {
+		const func = new Function(`return ${source}`)();
+		const result = func(...context);
+		postMessage({ id: name, result });
 	},
 };
 
