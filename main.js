@@ -1,8 +1,7 @@
-import { Sheet } from './src/metacalc';
+import { Spreadsheet } from './src/spreadsheet.js';
+import './style.css'
 
-window.sheet = new Sheet();
+const spreadsheet = new Spreadsheet();
 
-document.querySelector('#app').innerHTML = `
-  <h1>Hello Vite!</h1>
-  <a href="https://vitejs.dev/guide/features.html" target="_blank">Documentation</a>
-`
+const app = document.querySelector('#app');
+app.appendChild(spreadsheet);
