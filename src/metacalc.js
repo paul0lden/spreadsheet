@@ -12,13 +12,12 @@ const wrap = (target) =>
 
 const math = wrap(Math);
 
-const getValue = async (target, prop) => {
+const getValue = (target, prop) => {
   if (prop === 'Math') return math;
   const { expressions, data } = target;
   if (!expressions.has(prop)) return data.get(prop);
   const expression = expressions.get(prop);
-  console.log(expression);
-  return await expression();
+  return expression();
 };
 
 const getCell = (target, prop) => {
