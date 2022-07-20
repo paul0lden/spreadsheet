@@ -43,6 +43,13 @@ export class CustomHTMLElement extends HTMLElement {
     }
   }
 
+  setState(state) {
+    if (typeof state === "function") {
+      this.state = state(this.state);
+    }
+    this.state = state;
+  }
+
   on(name, fn) {
     this.addEventListener(name, fn);
     const event = this.eventRegestry.get(name);

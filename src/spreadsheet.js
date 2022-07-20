@@ -9,7 +9,7 @@ const splitLetters = (string) => {
 };
 
 class Cell extends CustomHTMLElement {
-  constructor(index, innerText = "0") {
+  constructor(index, value) {
     super();
     this.classList.add(
       "font-normal",
@@ -67,9 +67,8 @@ class Cell extends CustomHTMLElement {
 }
 
 export class Spreadsheet extends CustomHTMLElement {
-  constructor({ data, width, height }) {
+  constructor(data, { width = 10, height = 10, endless = false }) {
     super();
-
     this.classList.add(
       "m-6",
       "w-fit",
@@ -81,60 +80,33 @@ export class Spreadsheet extends CustomHTMLElement {
       "block",
       "dark:text-white"
     );
-    this.isSelecting = false;
-    const staticFields = ['columns', 'rows', 'width', 'height'];
-    this.table = new Proxy(this, {
-      ownKeys(target) {
-        return [];
-      },
-      getOwnPropertyDescriptor() {
-        return { enumerable: true, configurable: true };
-      },
-      get: (target, prop) => {
-        if (prop in staticFields) {
-          const rows = {};
-          const columns = {};
-          for (const key in Object.keys(target.table)) {
+    this.state = {
+      isSelecting: false,
+    };
+    this._sheet = new Sheet();
 
-            const { columnId, rowId } = splitLetters(key);
-            columns[columnId] = 0;
-            rows[rowId] = 0;
+    this.cells = [];
+
+    this.table = new Proxy(this,{
+        get: (target, prop) => {
+          if (prop === "columns") {
           }
-          if (prop === 'columns') return Object.keys(columns);
-          if (prop === 'width') return Object.keys(columns).length;
-          if (prop === 'rows') return Object.keys(rows);
-          if (prop === 'columns') return Object.keys(rows).length;
-        }
-        if (target.sheet.values[prop]) return target.sheet.values[prop];
-        return '0';
-      },
-      set: (target, prop, value) => {
-        if (porp in staticFields) {
-          console.error("Static fields are not editable");
-          return;
-        }
-        if (value) target.sheet.cells[prop] = value;
-      },
-    });
-    this.sheet = new Sheet();
-    this.defaultWidth = width;
-    this.defaultHeight = height;
-  }
-
-  static get observedAttributes() {
-    return ["data"];
+        },
+        set: (target, prop, value) => {},
+      }
+    );
   }
 
   get data() {}
 
   set data(obj) {}
 
-  numToChar(num) {
+  static numToChar(num) {
     const numToLetter = (n) => {
       return String.fromCharCode(65 + n);
     };
     if (num === undefined || num < 0) return undefined;
-    const lastLetter = this.numToLetter(num % 26);
+    const lastLetter = numToLetter(num % 26);
     const indexes = Math.floor(num / 26) - 1;
     const firstLetters =
       indexes > 0
@@ -160,7 +132,7 @@ export class Spreadsheet extends CustomHTMLElement {
       this.clickedElement.select();
     }
 
-    this.isSelecting = true;
+    this.setState((el) => ({ ...el, isSelecting: true }));
     this.selectionStart = e.target.index;
   }
 
@@ -171,7 +143,7 @@ export class Spreadsheet extends CustomHTMLElement {
   }
 
   mouseupHandler() {
-    this.isSelecting = false;
+    this.setState((el) => ({ ...el, isSelecting: false }));
   }
 
   keyboardHandler(e) {
@@ -186,21 +158,21 @@ export class Spreadsheet extends CustomHTMLElement {
 
   mouseoverHandler(e) {
     e.preventDefault();
-    if (e.target.isCell && this.isSelecting)
+    if (e.target.isCell && this.state.isSelecting)
       this.selectionTarget = e.target.index;
   }
 
-  renderTable() {
+  render() {
     for (const column in this.table.columns) {
       for (const row in this.table.rows) {
-        const index = `${column, row}`;
+        const index = `${(column, row)}`;
         this.appendChild(new Cell(index, this.table[index]));
       }
     }
   }
 
   async connectedCallback() {
-    this.renderTable();
+    this.render();
   }
 
   disconnectedCallback() {}
